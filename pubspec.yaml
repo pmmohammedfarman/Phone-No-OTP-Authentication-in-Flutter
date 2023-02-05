@@ -38,6 +38,8 @@ dependencies:
   firebase_auth: ^4.2.5
   flutter_sms: ^2.3.2
   firebase_core: ^2.4.1
+  sms_autofill: ^2.2.0
+
   #google_sign_in: ^5.1.0
   #flutter_facebook_auth: ^3.5.1
   #fluttertoast: ^8.0.8

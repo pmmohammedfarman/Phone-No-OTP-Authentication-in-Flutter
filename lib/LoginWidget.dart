@@ -5,14 +5,17 @@ import 'package:flutter_sms/flutter_sms.dart';
 //import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginWidget extends StatefulWidget {
-  const LoginWidget({Key? key}) : super(key: key);
+  final String phn;
+  const LoginWidget({Key? key, required this.phn}) : super(key: key);
 
   @override
   _LoginWidgetState createState() => _LoginWidgetState();
 }
 
 class _LoginWidgetState extends State<LoginWidget> {
-  TextEditingController phoneController = TextEditingController(text: "+923028997122");
+
+
+
   TextEditingController otpController = TextEditingController();
 
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -21,8 +24,11 @@ class _LoginWidgetState extends State<LoginWidget> {
 
   String verificationID = "";
 
+
   @override
   Widget build(BuildContext context) {
+    TextEditingController phoneController = TextEditingController(text: widget.phn);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Login With Phone"),
@@ -64,12 +70,14 @@ class _LoginWidgetState extends State<LoginWidget> {
   }
 
   void loginWithPhone() async {
+    // TextEditingController phoneController = TextEditingController(text: widget.phn);
+
     auth.verifyPhoneNumber(
-      phoneNumber: phoneController.text,
+      phoneNumber: widget.phn,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await auth.signInWithCredential(credential).then((value){
           print("You are logged in successfully");
-         // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MyHome()));
+          // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MyHome()));
 
         });
       },
