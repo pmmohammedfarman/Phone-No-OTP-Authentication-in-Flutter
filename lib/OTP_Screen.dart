@@ -5,6 +5,7 @@ import 'home.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phn;
+
   const OTPScreen({Key? key, required this.phn}) : super(key: key);
 
   @override
@@ -18,13 +19,22 @@ class _OTPScreenState extends State<OTPScreen> {
     _listenOTP();
   }*/
   bool me = true;
+ final FirebaseAuth _auth = FirebaseAuth.instance;
+ String l = "";
+ String otps = "";
 
 
-  @override
+
+
+
+
+
+ @override
   Widget build(BuildContext context) {
+
     if(me)
       {
-        loginWithPhone();
+        loginWithPhone(widget.phn);
 
       }
 
@@ -77,8 +87,15 @@ class _OTPScreenState extends State<OTPScreen> {
 
                           codeLength: 6,
                           onCodeChanged: (val) {
+                            if(val!=null && val.length>=6)
+                              {
+                                otps = val.toString();
+
+                              }
                             print(val);
+
                           },
+
                         ),
                       ),
                       // PinFieldAutoFill(
@@ -130,7 +147,12 @@ class _OTPScreenState extends State<OTPScreen> {
                 ),
                 child: TextButton(
                   onPressed: () {
-                    verifyOTP();
+                    if(otps.length>=0)
+                      {
+                        verifyOTP(otps,l);
+
+                      }
+
                   },
                   child: const Text(
                     "SUBMIT",
@@ -156,9 +178,9 @@ class _OTPScreenState extends State<OTPScreen> {
       ),
     );
   }
- void loginWithPhone() async {
+ void loginWithPhone(String phoneNumber) async {
    // TextEditingController phoneController = TextEditingController(text: widget.phn);
-   TextEditingController otpController = TextEditingController();
+   /*TextEditingController otpController = TextEditingController();
 
    FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -189,24 +211,58 @@ class _OTPScreenState extends State<OTPScreen> {
      },
    );
    //   final signcode = await SmsAutoFill().getAppSignature;
-   // print(signcode);
+   // print(signcode);*/
+   final PhoneVerificationCompleted verificationCompleted = (AuthCredential credential) {
+     _auth.signInWithCredential(credential);
+     print("Verified");
+   };
 
+   final PhoneVerificationFailed verificationFailed = (FirebaseAuthException exception) {
+     print('${exception.message}');
+   };
+
+  /* final PhoneCodeSent codeSent = (String verificationId, [int forceResendingToken]) {
+     print("Code sent to $phoneNumber");
+   };*/
+   final PhoneCodeSent codeSent = (String verificationId, [int? forceResendingToken]){
+     print("Code sent to $phoneNumber");
+     l = verificationId;
+
+   };
+
+   final PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout = (String verificationId) {
+     print("Time out");
+   };
+
+   await _auth.verifyPhoneNumber(
+     phoneNumber: phoneNumber,
+     timeout: const Duration(seconds: 60),
+     verificationCompleted: verificationCompleted,
+     verificationFailed: verificationFailed,
+     codeSent: codeSent,
+     codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
+   );
    me = false;
  }
 
-  void verifyOTP() async {
-    TextEditingController otpController = TextEditingController();
+  void verifyOTP(smsCode, verificationId) async {
+   // TextEditingController otpController = TextEditingController();
 
-    FirebaseAuth auth = FirebaseAuth.instance;
+   // FirebaseAuth auth = FirebaseAuth.instance;
 
-    bool otpVisibility = false;
+   // bool otpVisibility = false;
 
-    String verificationID = "";
+    String verificationID = verificationId;
+    AuthCredential credentials = PhoneAuthProvider.credential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+
+    );
 
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: verificationID, smsCode: otpController.text);
+        verificationId: verificationID, smsCode: smsCode);
 
-     auth.signInWithCredential(credential).then((value) {
+     _auth.signInWithCredential(credential).then((UserCredential userCredential) {
       print("You are logged in successfully");
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => MyHome()));
